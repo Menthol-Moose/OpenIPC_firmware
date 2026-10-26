@@ -1,0 +1,11 @@
+config BR2_PACKAGE_RTL8192CU_OPENIPC
+	bool "rtl8192cu-openipc"
+	depends on BR2_LINUX_KERNEL
+	help
+	  Realtek vendor driver (8192cu) for RTL8188CUS/RTL8192CU
+	  USB Wi-Fi adapters.
+
+	  https://github.com/pvaret/rtl8192cu-fixes
+
+comment "rtl8192cu-openipc needs a Linux kernel to be built"
+	depends on !BR2_LINUX_KERNEL
