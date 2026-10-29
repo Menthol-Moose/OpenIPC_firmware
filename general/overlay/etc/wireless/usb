@@ -9,7 +9,8 @@ set_gpio() {
 if [ "$1" = "rtl8192cu-xm530" ]; then
 	insmod /lib/modules/3.10.103+/xiongmai/dwc_common_port_lib.ko
 	insmod /lib/modules/3.10.103+/xiongmai/dwc_otg.ko
-	modprobe 8192cu rtw_power_mgnt=0 rtw_enusbss=0
+	modprobe cfg80211
+	insmod /lib/modules/3.10.103+/extra/8192cu.ko rtw_power_mgnt=0 rtw_enusbss=0
 	i=0
 	while [ ! -e /sys/class/net/wlan0 ] && [ $i -lt 15 ]; do sleep 1; i=$((i+1)); done
 	exit 0
