@@ -72,6 +72,62 @@ remove_sns()
 	rmmod -w ssp_sony &> /dev/null
 }
 
+# MMZ, VI, the ISP and the encoder: the open drivers when
+# xiongmai-opensdk-xm510 installed them (OpenIPC/openxiongmai drivers/xm_mmz,
+# drivers/xm510_vi, drivers/xm510_isp and drivers/hx280enc), the vendor
+# modules otherwise, which depmod indexes here
+# under xiongmai/. None of the open modules needs a vendor module's symbols.
+insert_mmz()
+{
+	modprobe open_mmz mmz_start=$MEM_START mmz_size=$MEM_LEN 2>/dev/null ||
+		modprobe mmz mmz_start=$MEM_START mmz_size=$MEM_LEN ||
+		report_error
+}
+
+remove_mmz()
+{
+	rmmod -w open_mmz 2>/dev/null || rmmod -w mmz
+}
+
+# The vendor xm510_vi.ko depends on mmz. With the vendor mmz.ko loaded,
+# modprobe resolves that; on open_mmz it would load the vendor mmz.ko beside
+# it, which open_mmz refuses ("exports duplicate symbol mmz_alloc"), failing
+# the load, so there it is insmod, which takes the symbols open_mmz exports.
+insert_vi()
+{
+	modprobe open_vi buffer=$VI_BUFF 2>/dev/null && return
+	if grep -q "^mmz " /proc/modules; then
+		modprobe xm510_vi buffer=$VI_BUFF
+	else
+		insmod xm510_vi.ko buffer=$VI_BUFF
+	fi
+}
+
+remove_vi()
+{
+	rmmod -w open_vi 2>/dev/null || rmmod -w xm510_vi
+}
+
+insert_isp()
+{
+	modprobe open_isp 2>/dev/null || modprobe xm510_isp
+}
+
+remove_isp()
+{
+	rmmod -w open_isp 2>/dev/null || rmmod -w xm510_isp
+}
+
+insert_h264()
+{
+	modprobe open_h264 2>/dev/null || modprobe xm510_h264
+}
+
+remove_h264()
+{
+	rmmod -w open_h264 2>/dev/null || rmmod -w xm510_h264
+}
+
 insert_ko()
 {
 # low power control
@@ -83,11 +139,11 @@ insert_ko()
 # driver load
 	cd /lib/modules/3.0.101/xiongmai/
 	insert_sns > /dev/null
-	insmod mmz.ko mmz_start=$MEM_START mmz_size=$MEM_LEN
-	insmod xm510_vi.ko buffer=$VI_BUFF
-	insmod xm510_isp.ko
+	insert_mmz
+	insert_vi
+	insert_isp
 	insmod xm510_rgn.ko
-	insmod xm510_h264.ko
+	insert_h264
 	insmod xm_rtc.ko
 	# The watchdog is the kernel's sp805_wdt (/dev/watchdog), not xm_wdt.ko: see
 	# OpenIPC/firmware#2611.
@@ -100,10 +156,11 @@ remove_ko()
 {
 	#remove_audio
 	rmmod -w xm_rtc
-	rmmod -w xm510_h264
+	remove_h264
 	rmmod -w xm510_rgn
-	rmmod -w xm510_isp
-	rmmod -w xm510_vi
+	remove_isp
+	remove_vi
+	remove_mmz
 
 	remove_sns
 }
