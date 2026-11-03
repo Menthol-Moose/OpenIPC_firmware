@@ -318,17 +318,32 @@ UNBUILT_FAMILIES = {
 # vermagic and a struct-layout probe, not by a boot (see its .mk). It leaves
 # this list when that board joins ALL_BOARDS, which waits for those modules
 # to have run on an AV130 camera.
+#
+# exfat-nofuse-openipc is the exFAT module for the 3.x kernels that
+# exfat-openipc does not build on. Its only user is OpenIPC/builder's
+# msc316dc_lite_imou-looc2 (infinity3, kernel 3.18); the mainline infinity3
+# boards have no card slot driver selected, so it would be flash spent on
+# nothing there.
+#
+# reset-button watches the pin named button= in /usr/share/openipc/gpio.conf,
+# and that file is per-device: OpenIPC/builder ships it under devices/<board>/,
+# and no mainline board has one, so there the init script finds no button and
+# starts nothing. Its first user is a builder device profile for the Heimlink
+# HM202 (SSC325); builder's per-device resetd scripts (t23 Jooan and LSC,
+# Lenovo Snowman) do the same job, each from a copy of its own. A mainline
+# board with a button in a gpio.conf would take it off this list.
 NOT_BUILT = {
     "adaptive-link", "aic8800-openipc", "allwinner-osdrv-v83x",
     "anyka-osdrv-ak3918av130", "atbm-wifi",
-    "aura-httpd", "baresip-openipc", "comgt", "f2fs-tools-openipc", "faceter-agent",
+    "aura-httpd", "baresip-openipc", "comgt", "exfat-nofuse-openipc", "f2fs-tools-openipc", "faceter-agent",
     "faceter-detector", "fdk-aac-openipc", "ffmpeg-openipc", "gdbserver-lite",
     "go2rtc", "herald", "hisi-gpio", "i2c-telemetry",
     "jsonfilter", "libhv-openipc", "libre-openipc", "libsrt-openipc",
     "matter",
     "mavfwd", "mdnsd-openipc", "mini", "mqtt-bot", "msposd", "n3n-openipc", "nabto",
     "netblink", "node-exporter", "ntfy", "onvif-simple-server", "openipc-nfs-root",
-    "osd-openipc", "rtl8188eus-openipc", "rtl8192eu-openipc", "rtl8811cu-openipc",
+    "osd-openipc", "reset-button", "rtl8188eus-openipc", "rtl8192eu-openipc",
+    "rtl8811cu-openipc",
     "rtl8812au", "rtl8812au-openipc", "rtl88x2eu-openipc", "rtw-hostapd", "rubyfpv",
     "siproxd-openipc", "ssv615x-openipc", "ssv635x-openipc", "txw8301-openipc",
     "uqmi-openipc", "usb-dual-role", "vdec-openipc", "venc-openipc",
